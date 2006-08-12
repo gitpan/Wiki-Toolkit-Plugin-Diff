@@ -4,8 +4,6 @@ Makefile.PL
 README
 META.yml
 lib/Wiki/Toolkit/Plugin/Diff.pm
-t/00_setup.t
-t/01_add_test_data.t
 t/02_diff.t
 t/pod.t
 t/pod_coverage.t

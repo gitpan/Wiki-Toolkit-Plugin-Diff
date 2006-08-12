@@ -1,5 +1,8 @@
 Revision history for Perl extension Wiki::Toolkit::Plugin::Diff.
 
+0.11  Sat Aug 12 20006
+    - Migrate test suite to Wiki::Toolkit::TestLib
+
 0.10  Tue May 16 2006
     - Renamed to Wiki::Toolkit::Plugin::Diff.
     - Temporarily disable some failing buggy tests.

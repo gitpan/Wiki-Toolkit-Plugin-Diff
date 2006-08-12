@@ -1,22 +1,119 @@
 use strict;
-use Wiki::Toolkit;
-use Wiki::Toolkit::TestConfig::Utilities;
-use Test::More tests =>
-  (1 + 17 * $Wiki::Toolkit::TestConfig::Utilities::num_stores);
+use Wiki::Toolkit::TestLib;
+use Test::More;
+
+my $iterator = Wiki::Toolkit::TestLib->new_wiki_maker;
+plan tests => ( 1 + $iterator->number * 18 );
 
 use_ok( "Wiki::Toolkit::Plugin::Diff" );
 
-my %stores = Wiki::Toolkit::TestConfig::Utilities->stores;
+while ( my $wiki = $iterator->new_wiki ) {
+      print "#\n##### TEST CONFIG: Store: " . (ref $wiki->store) . "\n";
 
-my ($store_name, $store);
-while ( ($store_name, $store) = each %stores ) {
-    SKIP: {
-      skip "$store_name storage backend not configured for testing", 17
-          unless $store;
+      # Add test data
+      $wiki->write_node( "Jerusalem Tavern",
+			 "Pub in Clerkenwell with St Peter's beer.",
+			 undef,
+			 { category => [ "Pubs" ]
+			 }
+		       );
 
-      print "#\n##### TEST CONFIG: Store: $store_name\n#\n";
+      my %j1 = $wiki->retrieve_node( "Jerusalem Tavern");
 
-      my $wiki = Wiki::Toolkit->new( store => $store );
+      $wiki->write_node( "Jerusalem Tavern",
+                         "Tiny pub in Clerkenwell with St Peter's beer. 
+Near Farringdon station",
+                         $j1{checksum},
+                         { category => [ "Pubs" ]
+                         }
+                       );
+
+      my %j2 = $wiki->retrieve_node( "Jerusalem Tavern");
+
+      $wiki->write_node( "Jerusalem Tavern",
+                         "Tiny pub in Clerkenwell with St Peter's beer. 
+Near Farringdon station",
+                         $j2{checksum},
+                         { category => [ "Pubs", "Real Ale" ],
+                           locale => [ "Farringdon" ]
+                         }
+                       );
+
+      my %j3 = $wiki->retrieve_node( "Jerusalem Tavern");
+
+      $wiki->write_node( "Jerusalem Tavern",
+                         "Tiny pub in Clerkenwell with St Peter's beer but no food. 
+Near Farringdon station",
+                         $j3{checksum},
+                         { category => [ "Pubs", "Real Ale" ],
+                           locale => [ "Farringdon" ]
+                         }
+                       );
+      
+      $wiki->write_node( "IvorW",
+      			 "
+In real life:  Ivor Williams
+
+Ideas & things to work on:
+
+* Threaded discussion wiki
+* Generify diff
+* SuperSearch for Wiki::Toolkit
+* Authentication module
+* Autoindex generation
+",
+			 undef,
+			 { username => 'Foo',
+			   metatest => 'Moo' },
+			);
+
+      my %i1 = $wiki->retrieve_node( "IvorW");
+
+      $wiki->write_node( "IvorW",
+      			 $i1{content}."
+[[IvorW's Test Page]]\n",
+			 $i1{checksum},
+			 { username => 'Bar',
+			   metatest => 'Boo' },
+			);
+			
+      my %i2 = $wiki->retrieve_node( "IvorW");
+
+      $wiki->write_node( "IvorW",
+      			 $i2{content}."
+[[Another Test Page]]\n",
+			 $i2{checksum},
+			 { username => 'Bar',
+			   metatest => 'Quack' },
+			);
+
+      my %i3 = $wiki->retrieve_node( "IvorW");
+      my $newcont = $i3{content};
+      $newcont =~ s/\n/ \n/s;
+      $wiki->write_node( "IvorW",
+      			 $newcont,
+			 $i3{checksum},
+			 { username => 'Bar',
+			   metatest => 'Quack' },
+			);
+
+      $wiki->write_node( "Test",
+      			 "a",
+			 undef,
+			 { },
+			);
+
+      %i3 = $wiki->retrieve_node( "Test");
+      
+      $wiki->write_node( "Test",
+      			 "a\n",
+			 $i3{checksum},
+			 { },
+			);
+
+      pass "backend primed with test data";
+
+      # Real tests
       my $differ = eval { Wiki::Toolkit::Plugin::Diff->new; };
       is( $@, "", "'new' doesn't croak" );
       isa_ok( $differ, "Wiki::Toolkit::Plugin::Diff" );
@@ -141,5 +238,4 @@ while ( ($store_name, $store) = each %stores ) {
                         right_version => 2 ) };
         is( $@, "", "differences doesn't die when only difference is a newline");
     } # end of TODO
-    } # end of SKIP
 }
