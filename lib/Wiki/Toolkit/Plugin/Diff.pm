@@ -3,7 +3,7 @@ package Wiki::Toolkit::Plugin::Diff;
 use strict;
 use warnings;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 use base 'Wiki::Toolkit::Plugin';
 use Algorithm::Diff;

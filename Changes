@@ -1,6 +1,9 @@
 Revision history for Perl extension Wiki::Toolkit::Plugin::Diff.
 
-0.11  Sat Aug 12 20006
+0.12  Tue Dec 12 2006
+    - Fix tests for VCS::Lite 0.08 or later
+
+0.11  Sat Aug 12 2006
     - Migrate test suite to Wiki::Toolkit::TestLib
 
 0.10  Tue May 16 2006

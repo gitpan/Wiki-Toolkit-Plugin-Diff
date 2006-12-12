@@ -1,7 +1,9 @@
 use strict;
 use Wiki::Toolkit::TestLib;
 use Test::More;
+use VCS::Lite;
 
+my $newlite = (VCS::Lite->VERSION >= 0.08);
 my $iterator = Wiki::Toolkit::TestLib->new_wiki_maker;
 plan tests => ( 1 + $iterator->number * 18 );
 
@@ -136,9 +138,17 @@ Ideas & things to work on:
       			left => "== Line 0 ==\n",
       			right => "== Line 1 ==\n"},
       		"First element is line number on right");
-      TODO: {
-          local $TODO = "Ivor tells me he needs to fix these but it's a bug in the test";
-      is_deeply( $bodydiff{diff}[1], {
+		
+      is_deeply( $bodydiff{diff}[1], $newlite ? {
+      			left => '<span class="diff1">Pub </span>'.
+      				'in Clerkenwell with St Peter\'s beer.'.
+      				"<br />",
+      			right => '<span class="diff2">Tiny pub </span>'.
+      				'in Clerkenwell with St Peter\'s beer.'.
+      				'<span class="diff2"><br />'.
+      				"\nNear Farringdon station</span>".
+      				"<br />",
+      				} : {
       			left => '<span class="diff1">Pub </span>'.
       				'in Clerkenwell with St Peter\'s beer.'.
       				"<br />\n",
@@ -160,7 +170,12 @@ Ideas & things to work on:
       			left =>  "== Line 2 ==\n",
       			right => "== Line 2 ==\n"},
       		"First element is line number on right");
-      is_deeply( $metadiff{diff}[1], {
+      is_deeply( $metadiff{diff}[1], $newlite ? {
+      			left => "\ncategory='Pubs'\nlocale='Farringdon'",
+      			right => "\ncategory='Pubs'\n".
+      				'<span class="diff2">category=\'Pubs,Real Ale\'<br />'.
+      				"\n</span>locale='Farringdon'",
+      				} : {
       			left => "category='Pubs'",
       			right => "category='Pubs".
       				'<span class="diff2">,Real Ale\'<br />'.
@@ -177,7 +192,14 @@ Ideas & things to work on:
       			left => "== Line 11 ==\n",
       			right => "== Line 11 ==\n"},
       		"Diff finds the right line number on right");
-        is_deeply( $bodydiff{diff}[1], {
+        is_deeply( $bodydiff{diff}[1], $newlite ? {
+        		left => "\nmetatest='Moo'\nmetatest='Boo'",
+        		right => "\nmetatest='Moo'\n".
+				'<span class="diff2">'.
+        			"[[IvorW's Test Page]]<br />\n".
+        			"<br />\n</span>".
+        			"metatest='Boo'"
+        			} : {
         		left => "metatest='".
         			'<span class="diff1">Moo</span>\'',
         		right => '<span class="diff2">'.
@@ -196,7 +218,14 @@ Ideas & things to work on:
       			left => "== Line 13 ==\n",
       			right => "== Line 13 ==\n"},
       		"Diff finds the right line number on right");
-        is_deeply( $bodydiff{diff}[1], {
+        is_deeply( $bodydiff{diff}[1], $newlite ? {
+        		left => "\nmetatest='Boo'\nmetatest='Quack'",
+        		right => "\nmetatest='Boo'\n".
+				'<span class="diff2">'.
+        			"[[Another Test Page]]<br />\n".
+        			"<br />\n</span>".
+        			"metatest='Quack'",
+        			} : {
         		left => "metatest='".
         			'<span class="diff1">Boo</span>\'',
         		right => '<span class="diff2">'.
@@ -223,7 +252,13 @@ Ideas & things to work on:
       			left => "== Line 0 ==\n",
       			right => "== Line 0 ==\n" },
       		"Diff finds the right line numbers");
-        is_deeply( $bodydiff{diff}[1], {
+        is_deeply( $bodydiff{diff}[1], $newlite ? {
+        		left => "Tiny pub in Clerkenwell with St Peter's beer".
+        		        ".<br />",
+        		right => "Tiny pub in Clerkenwell with St Peter's beer".
+        			' <span class="diff2">but no food</span>.'.
+        			"<br />",
+        			} : {
         		left => "Tiny pub in Clerkenwell with St Peter's beer".
         		        ".<br />\n",
         		right => "Tiny pub in Clerkenwell with St Peter's beer".
@@ -237,5 +272,4 @@ Ideas & things to work on:
                         left_version => 1,
                         right_version => 2 ) };
         is( $@, "", "differences doesn't die when only difference is a newline");
-    } # end of TODO
 }
